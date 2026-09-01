@@ -5,6 +5,47 @@ from bsjp_screener import screen_bsjp
 
 st.set_page_config(page_title="Rekomendasi BSJP Saham", layout="wide")
 
+# ==========================================
+# SISTEM KEAMANAN (LOGIN)
+# ==========================================
+def check_password():
+    """Mengembalikan `True` jika password benar."""
+    
+    def password_entered():
+        """Mengecek apakah password dan username cocok dengan Streamlit Secrets."""
+        if (st.session_state["username"] == st.secrets.get("DB_USERNAME", "admin") and
+            st.session_state["password"] == st.secrets.get("DB_TOKEN", "rahasia123")):
+            st.session_state["password_correct"] = True
+            # Jangan simpan password di session state setelah login
+            del st.session_state["password"]
+            del st.session_state["username"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if st.session_state.get("password_correct", False):
+        return True
+
+    st.title("🔒 Akses Terbatas")
+    st.write("Silakan masukkan Username dan Password untuk mengakses Aplikasi BSJP.")
+    
+    st.text_input("Username", key="username")
+    st.text_input("Password", type="password", key="password")
+    
+    if st.button("Login", on_click=password_entered):
+        pass # Logikanya dijalankan di on_click
+        
+    if "password_correct" in st.session_state and not st.session_state["password_correct"]:
+        st.error("❌ Username atau Password salah")
+        
+    return False
+
+if not check_password():
+    st.stop()  # Hentikan eksekusi script jika belum login
+
+# ==========================================
+# APLIKASI UTAMA (Hanya jalan setelah login)
+# ==========================================
+
 st.title("📈 Rekomendasi Saham BSJP (Beli Sore Jual Pagi)")
 
 st.markdown("""
